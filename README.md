@@ -1,2 +1,3 @@
-# async-programming-java-17
-Pluralsite course - Asynchronous Progamming in Java SE 17  
+# Asynchronous Programming in Java SE 17
+
+https://www.pluralsight.com/courses/java-se-17-asynchronous-programming
