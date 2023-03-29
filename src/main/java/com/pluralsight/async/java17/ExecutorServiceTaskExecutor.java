@@ -4,11 +4,14 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
-public class BasicTaskExecutor {
+public class ExecutorServiceTaskExecutor {
 
     public static void main(String[] args) {
         run();
@@ -31,10 +34,15 @@ public class BasicTaskExecutor {
         };
 
         List<Callable<Quotation>> quotes = List.of(fetchQuoteA, fetchQuoteB, fetchQuoteC);
+        var executorService = Executors.newFixedThreadPool(4);
+
         Instant now = Instant.now();
 
-        // This will run each async task in sequentially
-        Quotation bestQuote = quotes.stream().map(BasicTaskExecutor::fetchQuotation)
+        // This will run each async task in parallel
+        List<Future<Quotation>> futures = quotes.stream().map(executorService::submit)
+                .collect(Collectors.toList());
+
+        Quotation bestQuote = futures.stream().map(i -> getQuotation(i))
                 .min(Comparator.comparing(Quotation::getAmount))
                 .orElseThrow();
 
@@ -43,10 +51,12 @@ public class BasicTaskExecutor {
                 bestQuote.getServer() + "] Amount=" + bestQuote.getAmount() + " (" + duration.toMillis() + "ms)");
     }
 
-    private static Quotation fetchQuotation(Callable<Quotation> t) {
+    private static Quotation getQuotation(Future<Quotation> i) {
         try {
-            return t.call();
-        } catch (Exception e) {
+            return i.get();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
             throw new RuntimeException(e);
         }
     }

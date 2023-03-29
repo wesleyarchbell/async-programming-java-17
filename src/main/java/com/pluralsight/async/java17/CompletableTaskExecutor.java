@@ -4,11 +4,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
-import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
-public class BasicTaskExecutor {
+public class CompletableTaskExecutor {
 
     public static void main(String[] args) {
         run();
@@ -17,24 +18,31 @@ public class BasicTaskExecutor {
     private static void run() {
         Random random = new Random();
 
-        Callable<Quotation> fetchQuoteA = () -> {
+        // we use a supplier instead of a callable
+        Supplier<Quotation> fetchQuoteA = () -> {
             sleep(random);
             return new Quotation("Server A", random.nextInt(40, 60));
         };
-        Callable<Quotation> fetchQuoteB = () -> {
+        Supplier<Quotation> fetchQuoteB = () -> {
             sleep(random);
             return new Quotation("Server B", random.nextInt(40, 70));
         };
-        Callable<Quotation> fetchQuoteC = () -> {
+        Supplier<Quotation> fetchQuoteC = () -> {
             sleep(random);
             return new Quotation("Server C", random.nextInt(40, 80));
         };
 
-        List<Callable<Quotation>> quotes = List.of(fetchQuoteA, fetchQuoteB, fetchQuoteC);
+        List<Supplier<Quotation>> quotes = List.of(fetchQuoteA, fetchQuoteB, fetchQuoteC);
+
         Instant now = Instant.now();
 
-        // This will run each async task in sequentially
-        Quotation bestQuote = quotes.stream().map(BasicTaskExecutor::fetchQuotation)
+        // This will run each async task in parallel
+        List<CompletableFuture<Quotation>> futures = quotes.stream()
+                .map(CompletableFuture::supplyAsync)
+                .collect(Collectors.toList());
+
+        // join method on CompletableFuture does not throw an exception unlike Future
+        Quotation bestQuote = futures.stream().map(CompletableFuture::join)
                 .min(Comparator.comparing(Quotation::getAmount))
                 .orElseThrow();
 
@@ -43,16 +51,13 @@ public class BasicTaskExecutor {
                 bestQuote.getServer() + "] Amount=" + bestQuote.getAmount() + " (" + duration.toMillis() + "ms)");
     }
 
-    private static Quotation fetchQuotation(Callable<Quotation> t) {
+    private static void sleep(Random random) {
         try {
-            return t.call();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            Thread.sleep(random.nextInt(80, 120));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException();
         }
-    }
-
-    private static void sleep(Random random) throws InterruptedException {
-        Thread.sleep(random.nextInt(80, 120));
     }
 
     private static class Quotation {
