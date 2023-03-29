@@ -4,10 +4,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.Callable;
 
+/**
+ * This class uses a basic callable to run a few threads in sequence
+ */
 public class BasicTaskExecutor {
 
     public static void main(String[] args) {
@@ -53,23 +55,5 @@ public class BasicTaskExecutor {
 
     private static void sleep(Random random) throws InterruptedException {
         Thread.sleep(random.nextInt(80, 120));
-    }
-
-    private static class Quotation {
-        private String server;
-        private int amount;
-
-        public Quotation(String server, int amount) {
-            this.server = server;
-            this.amount = amount;
-        }
-
-        public String getServer() {
-            return server;
-        }
-
-        public int getAmount() {
-            return amount;
-        }
     }
 }

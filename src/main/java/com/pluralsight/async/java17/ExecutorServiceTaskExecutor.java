@@ -11,6 +11,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
+/**
+ * This class uses the executor service to run a few tasks asynchronously but block on main thread when
+ * waiting for the results when calling the get() method on the future object
+ */
 public class ExecutorServiceTaskExecutor {
 
     public static void main(String[] args) {
@@ -53,6 +57,7 @@ public class ExecutorServiceTaskExecutor {
 
     private static Quotation getQuotation(Future<Quotation> i) {
         try {
+            // this blocks the main thread
             return i.get();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -63,23 +68,5 @@ public class ExecutorServiceTaskExecutor {
 
     private static void sleep(Random random) throws InterruptedException {
         Thread.sleep(random.nextInt(80, 120));
-    }
-
-    private static class Quotation {
-        private String server;
-        private int amount;
-
-        public Quotation(String server, int amount) {
-            this.server = server;
-            this.amount = amount;
-        }
-
-        public String getServer() {
-            return server;
-        }
-
-        public int getAmount() {
-            return amount;
-        }
     }
 }

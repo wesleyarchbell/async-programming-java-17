@@ -2,18 +2,21 @@ package com.pluralsight.async.java17;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
- * This class uses the completable future to run a tasks asynchronously but block on main thread when
- *  * waiting for the results when calling the join() method on the supplier object
+ * This class will use the thenApply method of the completion stage api to not block the main thread but instead
+ * pass the result of the supplier to another function
  */
-public class CompletableTaskExecutor {
+public class NonBlockingTaskExecutor {
 
     public static void main(String[] args) {
         run();
@@ -37,13 +40,26 @@ public class CompletableTaskExecutor {
         };
 
         List<Supplier<Quotation>> quotes = List.of(fetchQuoteA, fetchQuoteB, fetchQuoteC);
-
         Instant now = Instant.now();
 
         // This will run each async task in parallel
         List<CompletableFuture<Quotation>> futures = quotes.stream()
                 .map(CompletableFuture::supplyAsync)
                 .collect(Collectors.toList());
+
+        Collection<Quotation> finalQuotes = new ConcurrentLinkedDeque<>();
+        List<CompletableFuture<Void>> voids = new ArrayList<>();
+
+        // Call then Accept to add all the quotes to a list
+        futures.stream()
+                .forEach(i -> {
+                    CompletableFuture<Void> accept = i.thenAccept(finalQuotes::add);
+                    voids.add(accept);
+                });
+
+        // This will block main thread until all tasks complete
+        voids.forEach(i -> i.join());
+        System.out.println("Quotations: " + finalQuotes);
 
         // join method on CompletableFuture does not throw an exception unlike Future but blocks main thread like get()
         Quotation bestQuote = futures.stream().map(CompletableFuture::join)
