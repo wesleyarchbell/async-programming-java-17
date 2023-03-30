@@ -37,12 +37,12 @@ public class BasicTaskExecutor {
 
         // This will run each async task in sequentially
         Quotation bestQuote = quotes.stream().map(BasicTaskExecutor::fetchQuotation)
-                .min(Comparator.comparing(Quotation::getAmount))
+                .min(Comparator.comparing(Quotation::amount))
                 .orElseThrow();
 
         Duration duration = Duration.between(now, Instant.now());
         System.out.println("Best quote [sync] = Server [" +
-                bestQuote.getServer() + "] Amount=" + bestQuote.getAmount() + " (" + duration.toMillis() + "ms)");
+                bestQuote.server() + "] Amount=" + bestQuote.amount() + " (" + duration.toMillis() + "ms)");
     }
 
     private static Quotation fetchQuotation(Callable<Quotation> t) {

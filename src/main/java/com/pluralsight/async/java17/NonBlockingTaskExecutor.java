@@ -50,7 +50,7 @@ public class NonBlockingTaskExecutor {
         Collection<Quotation> finalQuotes = new ConcurrentLinkedDeque<>();
         List<CompletableFuture<Void>> voids = new ArrayList<>();
 
-        // Call then Accept to add all the quotes to a list
+        // Call thenAccept() to add all the quotes to a list when they return
         futures.stream()
                 .forEach(i -> {
                     CompletableFuture<Void> accept = i.thenAccept(finalQuotes::add);
@@ -63,12 +63,12 @@ public class NonBlockingTaskExecutor {
 
         // join method on CompletableFuture does not throw an exception unlike Future but blocks main thread like get()
         Quotation bestQuote = futures.stream().map(CompletableFuture::join)
-                .min(Comparator.comparing(Quotation::getAmount))
+                .min(Comparator.comparing(Quotation::amount))
                 .orElseThrow();
 
         Duration duration = Duration.between(now, Instant.now());
         System.out.println("Best quote [sync] = Server [" +
-                bestQuote.getServer() + "] Amount=" + bestQuote.getAmount() + " (" + duration.toMillis() + "ms)");
+                bestQuote.server() + "] Amount=" + bestQuote.amount() + " (" + duration.toMillis() + "ms)");
     }
 
     private static void sleep(Random random) {

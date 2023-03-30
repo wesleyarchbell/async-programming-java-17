@@ -47,12 +47,12 @@ public class ExecutorServiceTaskExecutor {
                 .collect(Collectors.toList());
 
         Quotation bestQuote = futures.stream().map(i -> getQuotation(i))
-                .min(Comparator.comparing(Quotation::getAmount))
+                .min(Comparator.comparing(Quotation::amount))
                 .orElseThrow();
 
         Duration duration = Duration.between(now, Instant.now());
-        System.out.println("Best quote [sync] = Server [" +
-                bestQuote.getServer() + "] Amount=" + bestQuote.getAmount() + " (" + duration.toMillis() + "ms)");
+        System.out.println("Best quote [async] = Server [" +
+                bestQuote.server() + "] Amount=" + bestQuote.amount() + " (" + duration.toMillis() + "ms)");
     }
 
     private static Quotation getQuotation(Future<Quotation> i) {

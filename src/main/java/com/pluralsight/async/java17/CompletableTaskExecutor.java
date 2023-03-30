@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 /**
  * This class uses the completable future to run a tasks asynchronously but block on main thread when
- *  * waiting for the results when calling the join() method on the supplier object
+ *  waiting for the results when calling the join() method on the supplier object
  */
 public class CompletableTaskExecutor {
 
@@ -47,12 +47,12 @@ public class CompletableTaskExecutor {
 
         // join method on CompletableFuture does not throw an exception unlike Future but blocks main thread like get()
         Quotation bestQuote = futures.stream().map(CompletableFuture::join)
-                .min(Comparator.comparing(Quotation::getAmount))
+                .min(Comparator.comparing(Quotation::amount))
                 .orElseThrow();
 
         Duration duration = Duration.between(now, Instant.now());
-        System.out.println("Best quote [sync] = Server [" +
-                bestQuote.getServer() + "] Amount=" + bestQuote.getAmount() + " (" + duration.toMillis() + "ms)");
+        System.out.println("Best quote [async] = Server [" +
+                bestQuote.server() + "] Amount=" + bestQuote.amount() + " (" + duration.toMillis() + "ms)");
     }
 
     private static void sleep(Random random) {

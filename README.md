@@ -8,3 +8,4 @@ https://www.pluralsight.com/courses/java-se-17-asynchronous-programming
 - Split processing into small tasks, each task doing one thing; chain them with completion stage api
 - One task can trigger as many tasks as you want; many down streams 
 - You can also trigger a task on the outcome of many tasks
+- The completable future api also allows you to fire off multiple async tasks and get the first result which returns first 
